@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CreeperMC Store</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #d0f0c0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    position: relative;
+  }
+  /* Particle background */
+  #particle-background {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(122, 255, 201, 0.3);
+    box-shadow: 0 0 6px 2px rgba(122, 255, 201, 0.5);
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    opacity: 0.4;
+  }
+  /* Header */
+  header {
+    padding: 3rem 1rem 2rem;
+    text-align: center;
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    color: #7affc9;
+    text-shadow:
+      0 0 6px #7affc9,
+      0 0 14px #7affc9,
+      0 0 26px #7affc9,
+      0 0 40px #00ffcc;
+    user-select: none;
+    position: relative;
+    z-index: 10;
+    animation: pulseText 4s ease-in-out infinite;
+  }
+  @keyframes pulseText {
+    0%, 100% { text-shadow:
+      0 0 6px #7affc9,
+      0 0 14px #7affc9,
+      0 0 26px #7affc9,
+      0 0 40px #00ffd6;
+    }
+    50% {
+      text-shadow:
+      0 0 12px #00ffd6,
+      0 0 30px #00ffd6,
+      0 0 40px #00ffd6,
+      0 0 60px #00ffd6;
+    }
+  }
+  /* Navigation tabs */
+  nav#main-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    z-index: 10;
+    position: relative;
+  }
+  nav#main-tabs button {
+    background: transparent;
+    border: 2px solid #00ffe1;
+    color: #7affc9;
+    font-weight: 700;
+    padding: 0.7rem 2.2rem 0.7rem 3rem;
+    border-radius: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s ease;
+  }
+  nav#main-tabs button:focus {
+    outline: none;
+    box-shadow:
+      0 0 8px #00ffe1,
+      0 0 20px #00ffe1;
+  }
+  nav#main-tabs button.active,
+  nav#main-tabs button:hover {
+    background: #00ffe1;
+    color: #001f1a;
+    box-shadow:
+      0 0 15px #00ffe1,
+      0 0 40px #7affc9;
+  }
+  /* Emoji in tabs */
+  nav#main-tabs button span.emoji {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.6rem;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+  }
+  /* Animations for emojis */
+  .pulse {
+    animation-name: pulseEmoji;
+    animation-timing-function: ease-in-out;
+  }
+  .bounce {
+    animation-name: bounceEmoji;
+    animation-timing-function: cubic-bezier(.28,.84,.42,1);
+  }
+  .spin {
+    animation-name: spinEmoji;
+    animation-timing-function: linear;
+  }
+  .glow {
+    animation-name: glowEmoji;
+  }
+  @keyframes pulseEmoji {
+    0%, 100% { transform: translateY(-50%) scale(1); opacity: 1; }
+    50% { transform: translateY(-50%) scale(1.3); opacity: 0.8; }
+  }
+  @keyframes bounceEmoji {
+    0%, 100% { transform: translateY(-50%) translateY(0); }
+    50% { transform: translateY(-50%) translateY(-10px); }
+  }
+  @keyframes spinEmoji {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+  }
+  @keyframes glowEmoji {
+    0%, 100% { filter: drop-shadow(0 0 4px #7affc9); }
+    50% { filter: drop-shadow(0 0 12px #00fff7); }
+  }
+  /* Main content area */
+  main {
+    flex-grow: 1;
+    max-width: 1100px;
+    margin: auto;
+    padding: 0 1.5rem 3rem;
+    position: relative;
+    z-index: 10;
+  }
+  /* Page sections (hidden by default) */
+  section.page {
+    display: none;
+    animation: fadeInUp 0.8s ease forwards;
+  }
+  section.page.active {
+    display: block;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  /* Store internal sub-tabs */
+  #store-subtabs {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  #store-subtabs button {
+    background: transparent;
+    border: 2px solid #7affc9;
+    color: #7affc9;
+    font-weight: 600;
+    padding: 0.5rem 1.8rem;
+    border-radius: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+  }
+  #store-subtabs button.active,
+  #store-subtabs button:hover {
+    background: #7affc9;
+    color: #001f1a;
+    box-shadow:
+      0 0 10px #7affc9,
+      0 0 25px #7affc9;
+  }
+  /* Store categories */
+  .category-section {
+    margin-bottom: 3rem;
+  }
+  .category-section h2 {
+    font-size: 1.9rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #7affc9;
+    text-shadow: 0 0 6px #7affc9;
+  }
+  .category-section h2 span.emoji {
+    font-size: 2.4rem;
+  }
+  /* Items grid */
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+    gap: 1.5rem;
+  }
+  /* Item card */
+  .item-card {
+    background: #143d37;
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow:
+      0 0 10px #00ffe1,
+      inset 0 0 12px #00ffe1;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: #9cffde;
+  }
+  .item-card:hover,
+  .item-card:focus-within {
+    transform: translateY(-6px);
+    box-shadow:
+      0 0 15px #7affc9,
+      0 0 40px #7affc9,
+      inset 0 0 20px #7affc9;
+    outline: none;
+  }
+  .item-card h3 {
+    margin: 0 0 0.3rem 0;
+    font-weight: 700;
+  }
+  .item-card p {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .item-card button {
+    background: linear-gradient(45deg, #00ffe1, #7affc9);
+    border: none;
+    padding: 0.55rem 0;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #001f1a;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .item-card button:hover,
+  .item-card button:focus {
+    background: #00ccaa;
+    outline: none;
+    color: #000c04;
+  }
+  /* Animated icons inside item cards */
+  .icon-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.8rem;
+  }
+  /* Medal emoji for ranks */
+  .medal {
+    font-size: 40px;
+    user-select: none;
+    animation: bounce 2.5s infinite ease-in-out;
+  }
+  /* Coins emoji variations */
+  .coin-small {
+    font-size: 40px;
+    color: #a8d0ff;
+    user-select: none;
+    animation: sparkle 3s ease-in-out infinite;
+  }
+  .coin-bronze {
+    font-size: 40px;
+    color: #cd7f32;
+    user-select: none;
+    animation: sparkle 3s ease-in-out infinite;
+  }
+  .coin-silver {
+    font-size: 40px;
+    color: #c0c0c0;
+    user-select: none;
+    animation: sparkle 3s ease-in-out infinite;
+  }
+  .coin-gold {
+    font-size: 40px;
+    color: #ffd700;
+    user-select: none;
+    animation: sparkle 3s ease-in-out infinite;
+  }
+  .coin-platinum {
+    font-size: 40px;
+    color: #e5e4e2;
+    user-select: none;
+    animation: sparkle 3s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0);}
+    50% { transform: translateY(-8px);}
+  }
+  @keyframes sparkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  /* Page content animations */
+  .fade-slide-up {
+    animation: fadeInUp 0.7s ease forwards;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  /* Store section title */
+  .section-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #7affc9;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 8px #7affc9;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .section-title span.emoji {
+    font-size: 2.6rem;
+  }
+  /* Subcategory headings */
+  .subcategory-heading {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: #00ffe1;
+    text-shadow: 0 0 8px #00ffe1;
+  }
+  /* IP & Port section */
+  #server-info {
+    font-size: 1.3rem;
+    color: #a2f7d9;
+    user-select: none;
+    text-align: center;
+  }
+  #server-info p {
+    margin: 0.6rem 0;
+  }
+  #server-info span.value {
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: #00ffe1;
+    text-shadow:
+      0 0 6px #00ffe1,
+      0 0 16px #00ffe1;
+  }
+  /* About section */
+  #about p {
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin: 1rem auto;
+    line-height: 1.5;
+    color: #c6f8d6;
+    text-align: center;
+  }
+  /* Back to top */
+  #back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #00ffe1;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    color: #001f1a;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ffe1;
+    display: none;
+    z-index: 11000;
+    transition: background-color 0.3s ease;
+  }
+  #back-to-top:hover,
+  #back-to-top:focus {
+    background: #00ccaa;
+    outline: none;
+  }
+  /* Responsive */
+  @media (max-width: 650px) {
+    header {
+      font-size: 3rem;
+      padding: 2rem 1rem 1.5rem;
+    }
+    nav#main-tabs {
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    nav#main-tabs button {
+      padding: 0.6rem 1.4rem 0.6rem 2.4rem;
+      font-size: 1rem;
+    }
+    #store-subtabs {
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      justify-content: center;
+    }
+    #store-subtabs button {
+      padding: 0.5rem 1.2rem;
+      font-size: 0.9rem;
+    }
+    .items-grid {
+      grid-template-columns: repeat(auto-fill,minmax(140px,1fr));
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>CreeperMC Store</header>
+
+<nav id="main-tabs" role="tablist" aria-label="Main navigation">
+  <button role="tab" aria-selected="true" tabindex="0" data-target="home" class="active">
+    <span class="emoji pulse" aria-hidden="true">🏠</span> HOME
+  </button>
+  <button role="tab" aria-selected="false" tabindex="-1" data-target="store">
+    <span class="emoji glow" aria-hidden="true">🛒</span> STORE
+  </button>
+  <button role="tab" aria-selected="false" tabindex="-1" data-target="server-info">
+    <span class="emoji bounce" aria-hidden="true">🖥️</span> SERVER INFO
+  </button>
+  <button role="tab" aria-selected="false" tabindex="-1" data-target="about">
+    <span class="emoji spin" aria-hidden="true">📜</span> ABOUT
+  </button>
+</nav>
+
+<main>
+  <!-- Home page -->
+  <section id="home" class="page active" role="tabpanel" tabindex="0" aria-label="Home page">
+    <h1>Welcome to CreeperMC Server!</h1>
+    <p>Join our vibrant Minecraft community where creativity and competition meet.</p>
+    <p>We offer exciting game modes, custom plugins, and fair gameplay.</p>
+    <p>Whether you’re a beginner or a pro, CreeperMC has something for everyone.</p>
+    <p>Connect, build, and conquer with friends in a safe and friendly environment.</p>
+    <p>Our dedicated staff works around the clock to ensure a smooth and enjoyable experience.</p>
+    <p>With regular events and updates, there is always something new to explore!</p>
+  </section>
+
+  <!-- Store page -->
+  <section id="store" class="page" role="tabpanel" tabindex="0" aria-label="Store page">
+    <nav id="store-subtabs" role="tablist" aria-label="Store categories">
+      <button role="tab" aria-selected="true" tabindex="0" data-subtarget="ranks" class="active">Ranks</button>
+      <button role="tab" aria-selected="false" tabindex="-1" data-subtarget="crate-keys">Crate Keys</button>
+      <button role="tab" aria-selected="false" tabindex="-1" data-subtarget="coins">Coins</button>
+      <button role="tab" aria-selected="false" tabindex="-1" data-subtarget="extras">Extras</button>
+    </nav>
+
+    <!-- Ranks Category -->
+    <div class="category-section" id="ranks" role="tabpanel" aria-label="Ranks category">
+      <h2 class="section-title"><span class="emoji" aria-hidden="true">👑</span> Ranks</h2>
+
+      <h3 class="subcategory-heading most-popular">⭐ Most Popular</h3>
+      <div class="items-grid">
+        <article class="item-card" tabindex="0" aria-label="Rank: VIP - Most Popular">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true">🥈</div>
+          </div>
+          <h3>VIP</h3>
+          <p>Access to exclusive chat and perks.</p>
+          <button>Buy for ₹150/month (~$1.80/month)</button>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Rank: Deadliest - Most Popular">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true">🥇</div>
+          </div>
+          <h3>Deadliest</h3>
+          <p>Powerful rank with advanced perks.</p>
+          <button>Buy for ₹400/month (~$4.80/month)</button>
+        </article>
+      </div>
+
+      <h3 class="subcategory-heading value-money">💎 Value for Money</h3>
+      <div class="items-grid">
+        <article class="item-card" tabindex="0" aria-label="Rank: God - Value for Money">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true">🔥</div>
+          </div>
+          <h3>God</h3>
+          <p>Ultimate perks with exclusive commands.</p>
+          <button>Buy for ₹900/month (~$10.80/month)</button>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Rank: Master - Value for Money">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true">👑</div>
+          </div>
+          <h3>Master</h3>
+          <p>All perks unlocked + VIP treatment.</p>
+          <button>Buy for ₹1500/month (~$18.10/month)</button>
+        </article>
+      </div>
+
+      <h3 class="subcategory-heading new-rank">✨ New Rank</h3>
+      <div class="items-grid">
+        <article class="item-card" tabindex="0" aria-label="Rank: SMP - New">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true">🥉</div>
+          </div>
+          <h3>SMP</h3>
+          <p>Basic rank for starting players.</p>
+          <button>Buy for ₹50/month (~$0.60/month)</button>
+        </article>
+      </div>
+    </div>
+
+    <!-- Crate Keys Category -->
+    <div class="category-section" id="crate-keys" role="tabpanel" aria-label="Crate Keys category" hidden>
+      <h2 class="section-title"><span class="emoji spin" aria-hidden="true">🔑</span> Crate Keys</h2>
+      <div class="items-grid">
+        <article class="item-card" tabindex="0" aria-label="Crate Key: Bronze Key">
+          <div class="icon-container">
+            <div class="key" aria-hidden="true"></div>
+          </div>
+          <h3>Bronze Key</h3>
+          <p>Unlock Bronze Crate rewards.</p>
+          <button>Buy for ₹50 (~$0.60)</button>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Crate Key: Silver Key">
+          <div class="icon-container">
+            <div class="key" aria-hidden="true"></div>
+          </div>
+          <h3>Silver Key</h3>
+          <p>Unlock Silver Crate rewards.</p>
+          <button>Buy for ₹120 (~$1.45)</button>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Crate Key: Gold Key">
+          <div class="icon-container">
+            <div class="key" aria-hidden="true"></div>
+          </div>
+          <h3>Gold Key</h3>
+          <p>Unlock Gold Crate rewards.</p>
+          <button>Buy for ₹250 (~$3.00)</button>
+        </article>
+      </div>
+    </div>
+
+    <!-- Coins Category -->
+    <div class="category-section" id="coins" role="tabpanel" aria-label="Coins category" hidden>
+      <h2 class="section-title"><span class="emoji" aria-hidden="true">💰</span> Coins</h2>
+      <div class="items-grid">
+        <article class="item-card" tabindex="0" aria-label="Coins Pack: Starter Pack">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true" style="font-size: 40px; color: #9bf;">💎</div>
+          </div>
+          <h3>Starter Pack</h3>
+          <p>1,000 Coins — Perfect for new players</p>
+          <button>Buy for ₹100 (~$1.20)</button>
+          <p style="font-size: 0.9rem; color: #a9f1b6; margin-top: 0.3rem;">Bonus: 0 Coins | Total: 1,000 Coins</p>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Coins Pack: Bronze Pack">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true" style="font-size: 40px; color: #cd7f32;">🥉</div>
+          </div>
+          <h3>Bronze Pack</h3>
+          <p>5,000 Coins — Good value, encourages upgrades</p>
+          <button>Buy for ₹450 (~$5.40)</button>
+          <p style="font-size: 0.9rem; color: #a9f1b6; margin-top: 0.3rem;">Bonus: 250 Coins | Total: 5,250 Coins</p>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Coins Pack: Silver Pack">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true" style="font-size: 40px; color: #c0c0c0;">🥈</div>
+          </div>
+          <h3>Silver Pack</h3>
+          <p>10,000 Coins — Best value per coin</p>
+          <button>Buy for ₹850 (~$10.20)</button>
+          <p style="font-size: 0.9rem; color: #a9f1b6; margin-top: 0.3rem;">Bonus: 750 Coins | Total: 10,750 Coins</p>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Coins Pack: Gold Pack">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true" style="font-size: 40px; color: #ffd700;">🥇</div>
+          </div>
+          <h3>Gold Pack</h3>
+          <p>25,000 Coins — For big spenders, most popular</p>
+          <button>Buy for ₹1,900 (~$22.90)</button>
+          <p style="font-size: 0.9rem; color: #a9f1b6; margin-top: 0.3rem;">Bonus: 3,000 Coins | Total: 28,000 Coins</p>
+        </article>
+        <article class="item-card" tabindex="0" aria-label="Coins Pack: Platinum Pack">
+          <div class="icon-container">
+            <div class="medal" aria-hidden="true" style="font-size: 40px; color: #e5e4e2;">💰</div>
+          </div>
+          <h3>Platinum Pack</h3>
+          <p>50,000 Coins — Highest bonus, VIP players love</p>
+          <button>Buy for ₹3,600 (~$43.40)</button>
+          <p style="font-size: 0.9rem; color: #a9f1b6; margin-top: 0.3rem;">Bonus: 8,000 Coins | Total: 58,000 Coins</p>
+        </article>
+      </div>
+    </div>
+
+    <!-- Extras Category -->
+    <div class="category-section" id="extras" role="tabpanel" aria-label="Extras category" hidden>
+      <h2 class="section-title"><span class="emoji pulse" aria-hidden="true">✨</span> Extras</h2>
+      <p style="font-size: 1.3rem; color: #f6d1d1; text-align:center; margin-top: 3rem;">
+        This section is currently unavailable. Please check back later for new exciting items!
+      </p>
+    </div>
+  </section>
+
+  <!-- Server Info page -->
+  <section id="server-info" class="page" role="tabpanel" tabindex="0" aria-label="Server information page">
+    <h1>Server IP & Port</h1>
+    <p>Connect to our CreeperMC server at:</p>
+    <p><strong>IP Address:</strong> <span class="value">play.creepermcnet.fun</span></p>
+    <p><strong>Port:</strong> <span class="value">19132</span></p>
+    <p>We run the latest Minecraft Bedrock Edition and keep the server updated and secure for you!</p>
+  </section>
+
+  <!-- About page -->
+  <section id="about" class="page" role="tabpanel" tabindex="0" aria-label="About page">
+    <h1>About CreeperMC</h1>
+    <p>
+      CreeperMC is a community-driven Minecraft server dedicated to providing an enjoyable, safe, and
+      engaging experience for all players.
+    </p>
+    <p>
+      Our server features custom plugins, frequent events, and a friendly staff team committed to helping
+      you have fun and make new friends.
+    </p>
+    <p>
+      Join us today and become part of a vibrant community where creativity and competition thrive.
+    </p>
+  </section>
+</main>
+
+<button id="back-to-top" aria-label="Back to top">↑ Top</button>
+
+<script>
+  // Tab navigation for main tabs
+  const mainTabs = document.querySelectorAll('#main-tabs button');
+  const pages = document.querySelectorAll('section.page');
+
+  mainTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Deactivate all tabs
+      mainTabs.forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+        t.tabIndex = -1;
+      });
+      // Hide all pages
+      pages.forEach(p => p.classList.remove('active'));
+
+      // Activate clicked tab
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      tab.tabIndex = 0;
+      const targetId = tab.getAttribute('data-target');
+      const targetPage = document.getElementById(targetId);
+      if (targetPage) {
+        targetPage.classList.add('active');
+        targetPage.focus();
+      }
+    });
+  });
+
+  // Store sub-tabs navigation
+  const storeSubtabs = document.querySelectorAll('#store-subtabs button');
+  const storeCategories = document.querySelectorAll('.category-section');
+
+  storeSubtabs.forEach(subtab => {
+    subtab.addEventListener('click', () => {
+      // Deactivate all subtabs
+      storeSubtabs.forEach(st => {
+        st.classList.remove('active');
+        st.setAttribute('aria-selected', 'false');
+        st.tabIndex = -1;
+      });
+      // Hide all store categories
+      storeCategories.forEach(cat => cat.hidden = true);
+
+      // Activate clicked subtab
+      subtab.classList.add('active');
+      subtab.setAttribute('aria-selected', 'true');
+      subtab.tabIndex = 0;
+      const subtargetId = subtab.getAttribute('data-subtarget');
+      const subtargetCat = document.getElementById(subtargetId);
+      if (subtargetCat) {
+        subtargetCat.hidden = false;
+        subtargetCat.focus();
+      }
+    });
+  });
+
+  // Back to top button
+  const backToTopBtn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      backToTopBtn.style.display = 'block';
+    } else {
+      backToTopBtn.style.display = 'none';
+    }
+  });
+  backToTopBtn.addEventListener('click', () => {
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  // Accessibility: keyboard navigation for tabs
+  function keyboardNavigation(tabs) {
+    tabs.forEach(tab => {
+      tab.addEventListener('keydown', (e) => {
+        const currentIndex = Array.from(tabs).indexOf(e.target);
+        let nextIndex = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          nextIndex = (currentIndex + 1) % tabs.length;
+          tabs[nextIndex].focus();
+          e.preventDefault();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          tabs[nextIndex].focus();
+          e.preventDefault();
+        } else if (e.key === 'Home') {
+          tabs[0].focus();
+          e.preventDefault();
+        } else if (e.key === 'End') {
+          tabs[tabs.length - 1].focus();
+          e.preventDefault();
+        }
+      });
+    });
+  }
+  keyboardNavigation(mainTabs);
+  keyboardNavigation(storeSubtabs);
+
+  // Particle background animation
+  const particleContainer = document.createElement('div');
+  particleContainer.id = 'particle-background';
+  document.body.appendChild(particleContainer);
+
+  const particleCount = 30;
+  const particles = [];
+
+  function createParticle() {
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    p.style.width = p.style.height = `${8 + Math.random() * 12}px`;
+    p.style.left = `${Math.random() * 100}%`;
+    p.style.top = `${Math.random() * 100}%`;
+    p.style.animationDuration = `${5 + Math.random() * 10}s`;
+    particleContainer.appendChild(p);
+    return p;
+  }
+
+  for(let i=0; i<particleCount; i++) {
+    particles.push(createParticle());
+  }
+</script>
+
+</body>
+</html>
